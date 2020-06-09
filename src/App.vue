@@ -1,11 +1,7 @@
 <template>
   <div id="app">
-    <Elevator
-      class="elevator-component"
-      :floors="floors"
-      :currentFloor="currentFloor"
-    />
-    <Panel />
+    <Elevator class="component" :floors="floors" :currentFloor="currentFloor" />
+    <Panel class="component" :floors="floors" :buttons="buttons" />
   </div>
 </template>
 
@@ -22,7 +18,8 @@ export default {
   data() {
     return {
       floors: [6, 5, 4, 3, 2, 1, 0],
-      currentFloor: 1,
+      buttons: [0, 1, 2, 3, 4, 5, 6],
+      currentFloor: 0,
     };
   },
 };
@@ -41,7 +38,7 @@ export default {
   margin-top: 60px;
 }
 
-.elevator-component {
-  width: 50%;
+.component {
+  width: 20%;
 }
 </style>
