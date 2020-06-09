@@ -1,11 +1,6 @@
 <template>
   <div>
     <table>
-      <thead>
-        <tr>
-          <th colspan="2">Display</th>
-        </tr>
-      </thead>
       <tbody>
         <tr v-for="floor in floors" :key="floor">
           <td v-if="floor === currentFloor">
@@ -23,11 +18,7 @@ export default {
   name: 'Elevator',
   props: {
     floors: Array,
-  },
-  data() {
-    return {
-      currentFloor: 0,
-    };
+    currentFloor: Number
   },
 };
 </script>
