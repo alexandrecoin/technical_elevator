@@ -23,18 +23,12 @@ export default {
     floors: Array,
     buttons: Array,
   },
-  data() {
-    return {
-      persons: [],
-    };
-  },
   methods: {
     callElevator(floor, e) {
-      this.persons.push({
+      this.$emit('callElevator', floor, {
         from: floor,
         to: +e.target.value,
       });
-      console.log(this.persons);
     },
   },
 };
