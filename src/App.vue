@@ -5,6 +5,8 @@
       class="component"
       :floors="floors"
       :buttons="buttons"
+      :people="people"
+      :currentFloor="currentFloor"
       @callElevator="runProcess"
     />
   </div>
@@ -29,9 +31,10 @@ export default {
     };
   },
   methods: {
-    runProcess(floor, person) {
+    async runProcess(person) {
       this.people.push(person);
-      this.changeFloor(this.people);
+      console.log(this.people);
+      await this.changeFloor(this.people);
     },
 
     changeFloor(people) {
@@ -46,6 +49,8 @@ export default {
           for (i; i < from; i++) {
             await this.goUp();
           }
+          //Reste à l'étage
+          await this.waitForPerson();
           // Pour descendre par la suite
           if (to < this.currentFloor) {
             for (let j = this.currentFloor; j > to; j--) {
@@ -58,7 +63,6 @@ export default {
               await this.goUp();
             }
           }
-          this.people.shift();
         }
 
         // DESCENTE DE L'ASCENSEUR
@@ -67,6 +71,8 @@ export default {
           for (i; i > from; i--) {
             await this.goDown();
           }
+          // Reste à l'étage
+          await this.waitForPerson();
           // Pour descendre par la suite
           if (to < this.currentFloor) {
             for (let j = this.currentFloor; j > to; j--) {
@@ -80,8 +86,8 @@ export default {
               await this.goUp();
             }
           }
-          this.people.shift();
         }
+        this.people.shift();
       });
     },
 
@@ -100,6 +106,14 @@ export default {
           this.currentFloor--;
           resolve('Floor updated');
         }, 500);
+      });
+    },
+
+    waitForPerson() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve('Waited');
+        }, 1000);
       });
     },
   },
