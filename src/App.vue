@@ -1,19 +1,26 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Elevator class="elevator-component" :floors="floors"/>
+    <Panel />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Elevator from './components/Elevator.vue';
+import Panel from './components/Panel.vue';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    Elevator,
+    Panel,
+  },
+  data() {
+    return {
+      floors: [6, 5, 4, 3, 2, 1, 0],
+    };
+  },
+};
 </script>
 
 <style>
@@ -21,8 +28,14 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: row;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.elevator-component {
+  width: 50%;
 }
 </style>
