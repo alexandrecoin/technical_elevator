@@ -11,10 +11,7 @@
           >
             {{ button }}
           </button>
-          <!-- <pre
-            v-for="(person, index) in people"
-            :key="index"
-          ><div v-if="person.from === floor">I</div></pre> -->
+          <div></div>
         </td>
       </tr>
     </tbody>
