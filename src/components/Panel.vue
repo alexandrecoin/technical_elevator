@@ -11,6 +11,7 @@
           >
             {{ button }}
           </button>
+          <div></div>
         </td>
       </tr>
     </tbody>
@@ -22,10 +23,11 @@ export default {
   props: {
     floors: Array,
     buttons: Array,
+    currentFloor: Number,
   },
   methods: {
     callElevator(floor, e) {
-      this.$emit('callElevator', floor, {
+      this.$emit('callElevator', {
         from: floor,
         to: +e.target.value,
       });
@@ -45,6 +47,5 @@ button {
   width: 2em;
   height: 2em;
   border-radius: 50%;
-  /* outline: none; */
 }
 </style>
