@@ -7,7 +7,7 @@
       :buttons="buttons"
       :people="people"
       :currentFloor="currentFloor"
-      @callElevator="runProcess"
+      @callElevator="addPeople"
     />
   </div>
 </template>
@@ -27,40 +27,49 @@ export default {
       floors: [6, 5, 4, 3, 2, 1, 0],
       buttons: [0, 1, 2, 3, 4, 5, 6],
       people: [],
+      peopleWaiting: [],
       currentFloor: 0,
     };
   },
   methods: {
-    async runProcess(person) {
-      this.people.push(person);
-      await this.changeFloor(this.people);
+    async addPeople(person) {
+      if (!this.people.length) {
+        this.people.push(person);
+        try {
+          while (this.people.length) {
+            await this.changeFloor(this.people[0]);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        this.peopleWaiting.push(person);
+      }
     },
 
-    changeFloor(people) {
-      people.forEach(async (person) => {
-        let floorDifference = person.from - this.currentFloor;
-        if (floorDifference > 0) this.goUp(floorDifference, person);
-        if (floorDifference < 0) this.goDown(floorDifference, person);
-      });
-      // this.people.shift();
+    async changeFloor(person) {
+      let floorDifference = person.from - this.currentFloor;
+      if (floorDifference > 0) await this.goUp(floorDifference, person);
+      if (floorDifference < 0) await this.goDown(floorDifference, person);
+
+      this.people.shift();
+      if (this.peopleWaiting.length > 0)
+        this.people.push(this.peopleWaiting[0]);
+      this.peopleWaiting.shift();
     },
 
     async goUp(floorDifference, person) {
-      // MONTEE DE L'ASCENSEUR
       if (floorDifference > 0) {
         let i = this.currentFloor;
         for (i; i < person.from; i++) {
           await this.moveUp();
         }
-        //Reste à l'étage
         await this.waitForPerson();
-        // Pour descendre par la suite
         if (person.to < this.currentFloor) {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
           }
         }
-        // Pour monter par la suite
         if (person.to > this.currentFloor) {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
@@ -69,22 +78,18 @@ export default {
       }
     },
     async goDown(floorDifference, person) {
-      // DESCENTE DE L'ASCENSEUR
       if (floorDifference < 0) {
         let i = this.currentFloor;
         for (i; i > person.from; i--) {
           await this.moveDown();
         }
-        // Reste à l'étage
         await this.waitForPerson();
-        // Pour descendre par la suite
+
         if (person.to < this.currentFloor) {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
           }
         }
-
-        // Pour monter par la suite
         if (person.to > this.currentFloor) {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
