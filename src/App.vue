@@ -5,7 +5,6 @@
       class="component"
       :floors="floors"
       :buttons="buttons"
-      :people="people"
       :currentFloor="currentFloor"
       @callElevator="addPeople"
     />

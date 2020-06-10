@@ -23,7 +23,6 @@ export default {
   props: {
     floors: Array,
     buttons: Array,
-    people: Array,
     currentFloor: Number,
   },
   methods: {
