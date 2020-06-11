@@ -25,12 +25,12 @@ export default {
     floors: Array,
     buttons: Array,
     currentFloor: Number,
-    peopleWaitingOnFloors: Array,
+    peopleWaiting: Array,
   },
   computed: {
     passengers() {
       return (floor) =>
-        this.peopleWaitingOnFloors.filter((person) => person.from === floor)
+        this.peopleWaiting.filter((person) => person.from === floor)
           .length;
     },
   },

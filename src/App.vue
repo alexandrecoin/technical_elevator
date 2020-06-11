@@ -11,7 +11,7 @@
       :floors="floors"
       :buttons="buttons"
       :currentFloor="currentFloor"
-      :peopleWaitingOnFloors="peopleWaitingOnFloors"
+      :peopleWaiting="peopleWaiting"
       @callElevator="addPeople"
     />
   </div>
@@ -33,10 +33,9 @@ export default {
     return {
       floors: [6, 5, 4, 3, 2, 1, 0],
       buttons: [0, 1, 2, 3, 4, 5, 6],
-      peopleTravelling: [],
+      firstPassenger: [],
       peopleWaiting: [],
-      peopleWaitingOnFloors: [],
-      peopleInElevator: 0,
+      peopleInElevator: [],
       currentFloor: 0,
     };
   },
@@ -45,40 +44,11 @@ export default {
     moveDown: promises.moveDown,
     waitForPerson: promises.waitForPerson,
     async addPeople(person) {
-      this.peopleWaitingOnFloors.push(person);
-
-      // // SORTING PEOPLE BY FLOOR THEY'RE WAITING AT
-      // this.peopleWaitingOnFloors.sort(function(a, b) {
-      //   if (a.from === b.from) {
-      //     return b.to - a.to;
-      //   }
-      //   return a.from > b.from ? 1 : -1;
-      // });
-
-      // console.log('SORTED', this.peopleWaitingOnFloors);
-      // // FILTERING PEOPLE WAITING SO THEY GET TREATED AT THE SAME TIME AFTERWARDS
-      // console.log(
-      //   'FILTERED',
-      //   this.peopleWaitingOnFloors.filter(
-      //     (obj) => obj.from === this.peopleWaitingOnFloors[0].from,
-      //   ),
-      // );
-      // let peopleOnSameFloor = this.peopleWaitingOnFloors.filter(
-      //   (obj) => obj.from === this.peopleWaitingOnFloors[0].from,
-      // );
-
-      // // PUSHING IN ORIGINAL ARRAY FOR TREATMENT
-      // if (peopleOnSameFloor.length) {
-      //   peopleOnSameFloor.map((person) => {
-      //     this.people.push(person);
-      //   });
-      // }
-
-      if (!this.peopleTravelling.length) {
-        this.peopleTravelling.push(person);
+      if (!this.firstPassenger.length) {
+        this.firstPassenger.push(person);
         try {
-          while (this.peopleTravelling.length) {
-            await this.changeFloor(this.peopleTravelling[0]);
+          while (this.firstPassenger.length) {
+            await this.changeFloor(this.firstPassenger[0]);
           }
         } catch (e) {
           console.log(e);
@@ -90,62 +60,84 @@ export default {
 
     async changeFloor(person) {
       let floorDifference = person.from - this.currentFloor;
-      if (floorDifference > 0) await this.goUp(floorDifference, person);
-      if (floorDifference < 0) await this.goDown(floorDifference, person);
-
-      this.peopleTravelling.shift();
-      if (this.peopleWaiting.length > 0)
-        this.peopleTravelling.push(this.peopleWaiting[0]);
-      this.peopleWaiting.shift();
+      if (floorDifference > 0)
+        await this.elevatorGoUpstairs(
+          floorDifference,
+          this.currentFloor,
+          person,
+        );
+      if (floorDifference < 0)
+        await this.elevatorGoDownstairs(floorDifference, person);
     },
 
-    async goUp(floorDifference, person) {
-      const { direction } = person;
-      console.log(direction)
-      if (floorDifference > 0) {
-        let i = this.currentFloor;
-        for (i; i < person.from; i++) {
-          await this.moveUp();
-        }
-        await this.waitForPerson();
-        this.peopleWaitingOnFloors.shift();
-        this.peopleInElevator++;
-        if (direction === 'down') {
-          for (let j = this.currentFloor; j > person.to; j--) {
-            await this.moveDown();
-          }
-          this.peopleInElevator--;
-        }
-        if (direction === 'up') {
-          for (let j = this.currentFloor; j < person.to; j++) {
-            await this.moveUp();
-          }
-          this.peopleInElevator--;
-        }
+    async elevatorGoUpstairs(floorDifference, currentFloor, person) {
+      // Récupération du premier passager
+      for (let i = currentFloor; i < person.from; i++) {
+        await this.moveUp();
       }
-    },
-    async goDown(floorDifference, person) {
-      if (floorDifference < 0) {
-        let i = this.currentFloor;
-        for (i; i > person.from; i--) {
+      this.peopleInElevator.push(person);
+
+      // Tri de l'ensemble des personnes qui attendent pour voir qui descend au plus bas niveau
+      let peopleWaitingToGoDownstairs = this.peopleWaiting
+        .filter((people) => people.direction === 'down')
+        .sort((a, b) => b.from - a.from);
+      let downstairsPassengers = [
+        ...this.peopleInElevator,
+        ...peopleWaitingToGoDownstairs,
+      ];
+      // --> Calcul du plus bas niveau à atteindre
+      let minimumFloor = downstairsPassengers.reduce(
+        (min, object) => (object.to < min ? object.to : min),
+        downstairsPassengers[0].to,
+      );
+      console.log(minimumFloor);
+
+      // Boucle sur les étages à parcourir
+      if (person.direction === 'down') {
+        for (let floor = person.from; floor > minimumFloor; floor--) {
+          // Personnes qui montent dans l'ascenseur à l'étage "floor"
+          if (
+            peopleWaitingToGoDownstairs.filter(
+              (person) => person.from === floor,
+            ).length
+          ) {
+            await this.waitForPerson();
+            let peopleGoingInElevator = peopleWaitingToGoDownstairs.filter(
+              (person) => person.from === floor,
+            );
+            peopleGoingInElevator.map((person) => {
+              this.peopleInElevator.push(person);
+              let index = this.peopleWaiting.indexOf(person);
+              // Suppression des passagers en attente 
+              this.peopleWaiting.splice(index, 1);
+              peopleWaitingToGoDownstairs.splice(index, 1);
+            });
+            console.log(peopleWaitingToGoDownstairs.length);
+          }
+          let peopleGoingDownstairs = this.peopleWaiting
+            .filter((people) => people.direction === 'down')
+            .sort((a, b) => b.to - a.to);
+
+          // Pour personnes qui descendent de l'ascenseur à l'étage "floor"
+          if (
+            peopleGoingDownstairs.filter((person) => person.to === floor).length
+          ) {
+            console.log('descend');
+            let peopleLeavingElevator = peopleWaitingToGoDownstairs.filter(
+              (person) => person.to === floor,
+            );
+
+            peopleLeavingElevator.map((person) => {
+              let index = this.peopleInElevator.indexOf(person);
+              this.peopleInElevator.splice(index, 1);
+            });
+            await this.waitForPerson();
+          }
           await this.moveDown();
         }
-        await this.waitForPerson();
-        this.peopleInElevator++;
-
-        if (person.to < this.currentFloor) {
-          for (let j = this.currentFloor; j > person.to; j--) {
-            await this.moveDown();
-            this.peopleInElevator--;
-          }
-        }
-        if (person.to > this.currentFloor) {
-          for (let j = this.currentFloor; j < person.to; j++) {
-            await this.moveUp();
-            this.peopleInElevator--;
-          }
-        }
+        this.peopleInElevator.shift();
       }
+      this.firstPassenger.shift();
     },
   },
 };

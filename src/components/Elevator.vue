@@ -5,7 +5,7 @@
         <tr v-for="floor in floors" :key="floor">
           <td v-if="floor === currentFloor" class="container">
             <img src="../assets/cell.jpg" />
-            <pre class="centered">{{ peopleInElevator }}</pre>
+            <pre class="centered">{{ peopleInElevator.length }}</pre>
           </td>
           <td v-else class="floor">{{ floor }}</td>
         </tr>
@@ -20,7 +20,7 @@ export default {
   props: {
     floors: Array,
     currentFloor: Number,
-    peopleInElevator: Number,
+    peopleInElevator: Array,
   },
 };
 </script>
