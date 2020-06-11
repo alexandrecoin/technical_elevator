@@ -21,6 +21,8 @@
 import Elevator from './components/Elevator.vue';
 import Panel from './components/Panel.vue';
 
+import promises from './utils/promises';
+
 export default {
   name: 'App',
   components: {
@@ -39,8 +41,39 @@ export default {
     };
   },
   methods: {
+    moveUp: promises.moveUp,
+    moveDown: promises.moveDown,
+    waitForPerson: promises.waitForPerson,
     async addPeople(person) {
       this.peopleWaitingOnFloors.push(person);
+
+      // // SORTING PEOPLE BY FLOOR THEY'RE WAITING AT
+      // this.peopleWaitingOnFloors.sort(function(a, b) {
+      //   if (a.from === b.from) {
+      //     return b.to - a.to;
+      //   }
+      //   return a.from > b.from ? 1 : -1;
+      // });
+
+      // console.log('SORTED', this.peopleWaitingOnFloors);
+      // // FILTERING PEOPLE WAITING SO THEY GET TREATED AT THE SAME TIME AFTERWARDS
+      // console.log(
+      //   'FILTERED',
+      //   this.peopleWaitingOnFloors.filter(
+      //     (obj) => obj.from === this.peopleWaitingOnFloors[0].from,
+      //   ),
+      // );
+      // let peopleOnSameFloor = this.peopleWaitingOnFloors.filter(
+      //   (obj) => obj.from === this.peopleWaitingOnFloors[0].from,
+      // );
+
+      // // PUSHING IN ORIGINAL ARRAY FOR TREATMENT
+      // if (peopleOnSameFloor.length) {
+      //   peopleOnSameFloor.map((person) => {
+      //     this.people.push(person);
+      //   });
+      // }
+
       if (!this.people.length) {
         this.people.push(person);
         try {
@@ -111,32 +144,6 @@ export default {
           }
         }
       }
-    },
-
-    moveUp() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          this.currentFloor++;
-          resolve('Floor updated');
-        }, 500);
-      });
-    },
-
-    moveDown() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          this.currentFloor--;
-          resolve('Floor updated');
-        }, 500);
-      });
-    },
-
-    waitForPerson() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve('Waited');
-        }, 1000);
-      });
     },
   },
 };
