@@ -39,6 +39,7 @@ export default {
       this.$emit('callElevator', {
         from: floor,
         to: +e.target.value,
+        direction: floor - +e.target.value < 0 ? 'up' : 'down',
       });
     },
   },

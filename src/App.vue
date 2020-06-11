@@ -33,7 +33,7 @@ export default {
     return {
       floors: [6, 5, 4, 3, 2, 1, 0],
       buttons: [0, 1, 2, 3, 4, 5, 6],
-      people: [],
+      peopleTravelling: [],
       peopleWaiting: [],
       peopleWaitingOnFloors: [],
       peopleInElevator: 0,
@@ -74,11 +74,11 @@ export default {
       //   });
       // }
 
-      if (!this.people.length) {
-        this.people.push(person);
+      if (!this.peopleTravelling.length) {
+        this.peopleTravelling.push(person);
         try {
-          while (this.people.length) {
-            await this.changeFloor(this.people[0]);
+          while (this.peopleTravelling.length) {
+            await this.changeFloor(this.peopleTravelling[0]);
           }
         } catch (e) {
           console.log(e);
@@ -93,13 +93,15 @@ export default {
       if (floorDifference > 0) await this.goUp(floorDifference, person);
       if (floorDifference < 0) await this.goDown(floorDifference, person);
 
-      this.people.shift();
+      this.peopleTravelling.shift();
       if (this.peopleWaiting.length > 0)
-        this.people.push(this.peopleWaiting[0]);
+        this.peopleTravelling.push(this.peopleWaiting[0]);
       this.peopleWaiting.shift();
     },
 
     async goUp(floorDifference, person) {
+      const { direction } = person;
+      console.log(direction)
       if (floorDifference > 0) {
         let i = this.currentFloor;
         for (i; i < person.from; i++) {
@@ -108,13 +110,13 @@ export default {
         await this.waitForPerson();
         this.peopleWaitingOnFloors.shift();
         this.peopleInElevator++;
-        if (person.to < this.currentFloor) {
+        if (direction === 'down') {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
           }
           this.peopleInElevator--;
         }
-        if (person.to > this.currentFloor) {
+        if (direction === 'up') {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
           }
