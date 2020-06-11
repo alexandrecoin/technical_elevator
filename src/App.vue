@@ -1,11 +1,17 @@
 <template>
   <div id="app">
-    <Elevator class="component" :floors="floors" :currentFloor="currentFloor" />
+    <Elevator
+      class="component"
+      :floors="floors"
+      :currentFloor="currentFloor"
+      :peopleInElevator="peopleInElevator"
+    />
     <Panel
       class="component"
       :floors="floors"
       :buttons="buttons"
       :currentFloor="currentFloor"
+      :peopleWaitingOnFloors="peopleWaitingOnFloors"
       @callElevator="addPeople"
     />
   </div>
@@ -27,11 +33,14 @@ export default {
       buttons: [0, 1, 2, 3, 4, 5, 6],
       people: [],
       peopleWaiting: [],
+      peopleWaitingOnFloors: [],
+      peopleInElevator: 0,
       currentFloor: 0,
     };
   },
   methods: {
     async addPeople(person) {
+      this.peopleWaitingOnFloors.push(person);
       if (!this.people.length) {
         this.people.push(person);
         try {
@@ -64,15 +73,19 @@ export default {
           await this.moveUp();
         }
         await this.waitForPerson();
+        this.peopleWaitingOnFloors.shift();
+        this.peopleInElevator++;
         if (person.to < this.currentFloor) {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
           }
+          this.peopleInElevator--;
         }
         if (person.to > this.currentFloor) {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
           }
+          this.peopleInElevator--;
         }
       }
     },
@@ -83,15 +96,18 @@ export default {
           await this.moveDown();
         }
         await this.waitForPerson();
+        this.peopleInElevator++;
 
         if (person.to < this.currentFloor) {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
+            this.peopleInElevator--;
           }
         }
         if (person.to > this.currentFloor) {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
+            this.peopleInElevator--;
           }
         }
       }

@@ -3,8 +3,9 @@
     <table>
       <tbody>
         <tr v-for="floor in floors" :key="floor">
-          <td v-if="floor === currentFloor">
+          <td v-if="floor === currentFloor" class="container">
             <img src="../assets/cell.jpg" />
+            <pre class="centered">{{ peopleInElevator }}</pre>
           </td>
           <td v-else class="floor">{{ floor }}</td>
         </tr>
@@ -18,13 +19,28 @@ export default {
   name: 'Elevator',
   props: {
     floors: Array,
-    currentFloor: Number
+    currentFloor: Number,
+    peopleInElevator: Number,
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.container {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+/* Centered text */
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 h3 {
   margin: 40px 0 0;
 }

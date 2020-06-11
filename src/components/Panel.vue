@@ -8,10 +8,11 @@
             :key="button"
             :value="button"
             @click="callElevator(floor, $event)"
+            :disabled="button === floor"
           >
             {{ button }}
           </button>
-          <div></div>
+          <div>{{ passengers(floor) }}</div>
         </td>
       </tr>
     </tbody>
@@ -24,6 +25,14 @@ export default {
     floors: Array,
     buttons: Array,
     currentFloor: Number,
+    peopleWaitingOnFloors: Array,
+  },
+  computed: {
+    passengers() {
+      return (floor) =>
+        this.peopleWaitingOnFloors.filter((person) => person.from === floor)
+          .length;
+    },
   },
   methods: {
     callElevator(floor, e) {
