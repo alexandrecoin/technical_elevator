@@ -57,8 +57,16 @@ export default {
 
     async changeFloor(person) {
       let floorDifference = person.from - this.currentFloor;
-      if (floorDifference > 0) await this.goUp(floorDifference, person);
-      if (floorDifference < 0) await this.goDown(floorDifference, person);
+      if (
+        floorDifference > 0 ||
+        (floorDifference === 0 && person.from < person.to)
+      )
+        await this.goUp(floorDifference, person);
+      if (
+        floorDifference < 0 ||
+        (floorDifference === 0 && person.from > person.to)
+      )
+        await this.goDown(floorDifference, person);
 
       this.people.shift();
       if (this.peopleWaiting.length > 0)
@@ -67,7 +75,7 @@ export default {
     },
 
     async goUp(floorDifference, person) {
-      if (floorDifference > 0) {
+      if (floorDifference > 0 || floorDifference === 0) {
         let i = this.currentFloor;
         for (i; i < person.from; i++) {
           await this.moveUp();
@@ -90,25 +98,25 @@ export default {
       }
     },
     async goDown(floorDifference, person) {
-      if (floorDifference < 0) {
+      if (floorDifference < 0 || floorDifference === 0) {
         let i = this.currentFloor;
         for (i; i > person.from; i--) {
           await this.moveDown();
         }
         await this.waitForPerson();
+        this.peopleWaitingOnFloors.shift();
         this.peopleInElevator++;
-
         if (person.to < this.currentFloor) {
           for (let j = this.currentFloor; j > person.to; j--) {
             await this.moveDown();
-            this.peopleInElevator--;
           }
+            this.peopleInElevator--;
         }
         if (person.to > this.currentFloor) {
           for (let j = this.currentFloor; j < person.to; j++) {
             await this.moveUp();
-            this.peopleInElevator--;
           }
+            this.peopleInElevator--;
         }
       }
     },
