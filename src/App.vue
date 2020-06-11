@@ -66,6 +66,12 @@ export default {
           this.currentFloor,
           person,
         );
+      // Utilisé pour rester dans la bouche while tant que this.peopleWaiting n'est pas vide
+      // if (!this.firstPassenger.length && this.peopleWaiting.length) {
+      //   this.firstPassenger.push(this.peopleWaiting[0]);
+      //   console.log(this.firstPassenger[0]);
+      //   this.peopleWaiting.splice(0, 1);
+      // }
       if (floorDifference < 0)
         await this.elevatorGoDownstairs(floorDifference, person);
     },
@@ -90,11 +96,10 @@ export default {
         (min, object) => (object.to < min ? object.to : min),
         downstairsPassengers[0].to,
       );
-      console.log(minimumFloor);
 
       // Boucle sur les étages à parcourir
       if (person.direction === 'down') {
-        for (let floor = person.from; floor > minimumFloor; floor--) {
+        for (let floor = person.from; floor >= minimumFloor; floor--) {
           // Personnes qui montent dans l'ascenseur à l'étage "floor"
           if (
             peopleWaitingToGoDownstairs.filter(
@@ -107,14 +112,13 @@ export default {
             );
             peopleGoingInElevator.map((person) => {
               this.peopleInElevator.push(person);
+              // Suppression des passagers en attente
               let index = this.peopleWaiting.indexOf(person);
-              // Suppression des passagers en attente 
               this.peopleWaiting.splice(index, 1);
               peopleWaitingToGoDownstairs.splice(index, 1);
             });
-            console.log(peopleWaitingToGoDownstairs.length);
           }
-          let peopleGoingDownstairs = this.peopleWaiting
+          let peopleGoingDownstairs = this.peopleInElevator
             .filter((people) => people.direction === 'down')
             .sort((a, b) => b.to - a.to);
 
@@ -122,8 +126,7 @@ export default {
           if (
             peopleGoingDownstairs.filter((person) => person.to === floor).length
           ) {
-            console.log('descend');
-            let peopleLeavingElevator = peopleWaitingToGoDownstairs.filter(
+            let peopleLeavingElevator = peopleGoingDownstairs.filter(
               (person) => person.to === floor,
             );
 
